@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Delivery Worth-It Calculator</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --text: #14171a;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --accent: #16a34a;
+    --accent-dim: #dcfce7;
+    --warn: #d97706;
+    --warn-dim: #fef3c7;
+    --bad: #dc2626;
+    --bad-dim: #fee2e2;
+    --input-bg: #f1f2f4;
+    --shadow: 0 1px 2px rgba(0,0,0,0.06), 0 1px 8px rgba(0,0,0,0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1115;
+      --card: #1a1d23;
+      --text: #f1f2f4;
+      --muted: #9aa1ab;
+      --border: #2b2f37;
+      --accent: #34d399;
+      --accent-dim: #0f2b20;
+      --warn: #fbbf24;
+      --warn-dim: #2b220a;
+      --bad: #f87171;
+      --bad-dim: #2b1414;
+      --input-bg: #22262e;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1115;
+    --card: #1a1d23;
+    --text: #f1f2f4;
+    --muted: #9aa1ab;
+    --border: #2b2f37;
+    --accent: #34d399;
+    --accent-dim: #0f2b20;
+    --warn: #fbbf24;
+    --warn-dim: #2b220a;
+    --bad: #f87171;
+    --bad-dim: #2b1414;
+    --input-bg: #22262e;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.3);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+    min-height: 100%;
+  }
+  .wrap {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 18px 16px 8px;
+  }
+  header {
+    padding: 6px 4px 14px;
+  }
+  header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 2px;
+    letter-spacing: -0.01em;
+  }
+  header p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+  .card h2 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 12px;
+    font-weight: 700;
+  }
+  .field {
+    margin-bottom: 12px;
+  }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .field label .hint {
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .input-row {
+    display: flex;
+    align-items: center;
+    background: var(--input-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid transparent;
+  }
+  .input-row:focus-within {
+    border-color: var(--accent);
+  }
+  .input-row .prefix {
+    padding: 0 0 0 14px;
+    color: var(--muted);
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .input-row input[type="number"] {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 13px 14px;
+    font-size: 17px;
+    color: var(--text);
+    width: 100%;
+    -moz-appearance: textfield;
+  }
+  .input-row input[type="number"]::-webkit-outer-spin-button,
+  .input-row input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none; marger: 0;
+  }
+  .input-row input:focus { outline: none; }
+  .input-row .suffix {
+    padding: 0 14px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .toggle-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .chip {
+    flex: 1;
+    text-align: center;
+    padding: 9px 6px;
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    user-select: none;
+  }
+  .chip.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .switch-row .lbl { font-size: 14px; font-weight: 600; }
+  .switch-row .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .switch {
+    position: relative;
+    width: 46px; height: 27px;
+    flex-shrink: 0;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider-el {
+    position: absolute; cursor: pointer; inset: 0;
+    background: var(--border);
+    border-radius: 999px;
+    transition: 0.15s;
+  }
+  .slider-el:before {
+    content: "";
+    position: absolute;
+    height: 21px; width: 21px;
+    left: 3px; top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.15s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .switch input:checked + .slider-el { background: var(--accent); }
+  .switch input:checked + .slider-el:before { transform: translateX(19px); }
+
+  .result-card {
+    border-radius: 18px;
+    padding: 20px 16px;
+    margin-bottom: 12px;
+    text-align: center;
+    transition: background 0.2s;
+  }
+  .result-card .verdict {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 2px;
+  }
+  .result-card .verdict-sub {
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.85;
+    margin-bottom: 16px;
+  }
+  .big-stats {
+    display: flex;
+    gap: 10px;
+  }
+  .big-stat {
+    flex: 1;
+    background: rgba(255,255,255,0.5);
+    border-radius: 12px;
+    padding: 10px 6px;
+  }
+  :root[data-theme="dark"] .big-stat, @media (prefers-color-scheme: dark) { .big-stat { background: rgba(255,255,255,0.06); } }
+  .big-stat .val {
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+  .big-stat .lbl {
+    font-size: 11px;
+    opacity: 0.75;
+    margin-top: 3px;
+    font-weight: 600;
+  }
+  .breakdown {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 8px 2px;
+    border-bottom: 1px solid var(--border);
+  }
+  .breakdown:last-child { border-bottom: none; }
+  .breakdown .k { color: var(--muted); }
+  .breakdown .v { font-weight: 600; }
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 14px 20px 4px;
+    line-height: 1.5;
+  }
+  .leg-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .leg-row .leg-label {
+    width: 30px;
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-align: center;
+  }
+  .leg-row .input-row {
+    flex: 1;
+  }
+  .leg-row .leg-remove {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: var(--input-bg);
+    color: var(--muted);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .miles-total {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+  .stats-bar {
+    display: flex;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .stats-bar .stat {
+    flex: 1;
+    text-align: center;
+    padding: 10px 4px;
+    border-right: 1px solid var(--border);
+  }
+  .stats-bar .stat:last-child { border-right: none; }
+  .stats-bar .stat .n { font-size: 17px; font-weight: 800; line-height: 1.1; }
+  .stats-bar .stat .l { font-size: 10px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+  .grade-badge {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 800;
+    margin: 0 auto 10px;
+    border: 4px solid currentColor;
+  }
+  .decision-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .decision-row button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .decision-row .skip-btn {
+    background: transparent;
+    border-color: currentColor;
+    color: inherit;
+    opacity: 0.7;
+  }
+  .decision-row .take-btn {
+    background: currentColor;
+  }
+  .decision-row .take-btn span { color: var(--card); }
+  select.state-select {
+    width: 100%;
+    padding: 13px 14px;
+    border-radius: 12px;
+    border: none;
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 16px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .log-summary {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .log-summary .box {
+    flex: 1;
+    background: var(--input-bg);
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .log-summary .box .n { font-size: 17px; font-weight: 800; }
+  .log-summary .box .l { font-size: 10.5px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+  .log-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+  }
+  .log-entry:last-child { border-bottom: none; }
+  .log-entry .le-date { font-size: 11.5px; color: var(--muted); }
+  .log-entry .le-miles { font-size: 13px; font-weight: 600; margin-top: 1px; }
+  .log-entry .le-net { font-size: 15px; font-weight: 800; color: var(--accent); text-align: right; }
+  .log-entry .le-sub { font-size: 11px; color: var(--muted); text-align: right; margin-top: 1px; }
+  .log-entry .le-del {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: var(--input-bg);
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .log-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .log-actions button {
+    flex: 1;
+    padding: 11px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+  }
+  .log-actions .export-btn {
+    background: var(--accent);
+    color: #06210f;
+    border-color: transparent;
+  }
+  .log-empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 10px 0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+    <div>
+      <h1>🚗 Worth It?</h1>
+      <p>Round-trip delivery profit calculator</p>
+    </div>
+    <button type="button" id="scanBtn" style="flex-shrink:0; display:flex; align-items:center; gap:6px; padding:9px 14px 9px 11px; border-radius:999px; border:none; background:var(--accent); color:#06210f; font-size:13.5px; font-weight:700; cursor:pointer; box-shadow:var(--shadow); white-space:nowrap;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 8.5C4 7.4 4.9 6.5 6 6.5H8.2L9.4 4.8C9.7 4.3 10.3 4 10.9 4H13.1C13.7 4 14.3 4.3 14.6 4.8L15.8 6.5H18C19.1 6.5 20 7.4 20 8.5V17.5C20 18.6 19.1 19.5 18 19.5H6C4.9 19.5 4 18.6 4 17.5V8.5Z" stroke="#06210f" stroke-width="1.6" stroke-linejoin="round"/>
+        <circle cx="12" cy="13" r="3.2" stroke="#06210f" stroke-width="1.6"/>
+      </svg>
+      Scan
+    </button>
+  </header>
+  <div id="scanStatus" style="display:none; font-size:12.5px; color:var(--muted); background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px 12px; margin:0 4px 12px; text-align:center;"></div>
+  <input type="file" id="scanInput" accept="image/*" style="display:none;">
+
+  <div class="stats-bar">
+    <div class="stat"><div class="n" id="statSeen">0</div><div class="l">OFFERS SEEN</div></div>
+    <div class="stat"><div class="n" id="statTaken">0</div><div class="l">YOU TOOK</div></div>
+    <div class="stat"><div class="n" id="statAvgHr">—</div><div class="l">AVG $/HR</div></div>
+    <div class="stat"><div class="n" id="statAvgMi">—</div><div class="l">AVG $/MI</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Payout</h2>
+    <div class="field">
+      <label>Total offer amount <span class="hint">base + tip</span></label>
+      <div class="input-row">
+        <span class="prefix">$</span>
+        <input type="number" id="payout" inputmode="decimal" placeholder="25.00" step="0.01">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Distance</h2>
+    <div class="toggle-row" id="modeChips" style="margin-bottom:14px;">
+      <div class="chip active" data-mode="single">Single order</div>
+      <div class="chip" data-mode="multi">Multi-stop / stacked</div>
+    </div>
+
+    <div id="singleMode">
+      <div class="field">
+        <label>To pickup <span class="hint">you → restaurant</span></label>
+        <div class="input-row">
+          <input type="number" id="milesToPickup" inputmode="decimal" placeholder="0" step="0.1">
+          <span class="suffix">mi</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Delivery leg <span class="hint">what DoorDash shows, e.g. "15 mi"</span></label>
+        <div class="input-row">
+          <input type="number" id="deliveryLeg" inputmode="decimal" placeholder="15" step="0.1">
+          <span class="suffix">mi</span>
+        </div>
+      </div>
+      <div class="field">
+        <div class="switch-row">
+          <div>
+            <div class="lbl">Estimate return trip</div>
+            <div class="sub">Assumes you drive back the delivery-leg distance</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="estimateReturn" checked>
+            <span class="slider-el"></span>
+          </label>
+        </div>
+      </div>
+      <div class="field" id="manualReturnField" style="display:none;">
+        <label>Return trip <span class="hint">customer → back to you</span></label>
+        <div class="input-row">
+          <input type="number" id="returnMiles" inputmode="decimal" placeholder="0" step="0.1">
+          <span class="suffix">mi</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="multiMode" style="display:none;">
+      <div class="field" style="margin-bottom:10px;">
+        <label style="margin-bottom:2px;">Add every leg of the route <span class="hint">incl. the drive back to you</span></label>
+      </div>
+      <div id="legList"></div>
+      <button type="button" id="addLegBtn" style="width:100%; padding:11px; border-radius:12px; border:1px dashed var(--border); background:transparent; color:var(--accent); font-weight:700; font-size:14px; margin-top:4px; cursor:pointer;">+ Add leg</button>
+    </div>
+
+    <div class="miles-total" id="milesTotalLine"></div>
+  </div>
+
+  <div class="card">
+    <h2>Cost per mile</h2>
+    <div class="toggle-row" id="costChips">
+      <div class="chip" data-cost="gas">Gas only</div>
+      <div class="chip active" data-cost="realistic">Realistic</div>
+      <div class="chip" data-cost="irs">Full IRS</div>
+    </div>
+    <div class="field" style="margin-top:14px;">
+      <label>Your cost / mile <span class="hint">editable</span></label>
+      <div class="input-row">
+        <span class="prefix">$</span>
+        <input type="number" id="costPerMile" inputmode="decimal" step="0.01" value="0.35">
+      </div>
+    </div>
+    <div class="field" style="margin-top:2px;">
+      <label style="font-size:12px; color:var(--muted); font-weight:600;">MPG</label>
+      <div class="input-row">
+        <input type="number" id="mpg" inputmode="decimal" step="1" value="37">
+        <span class="suffix">mpg</span>
+      </div>
+    </div>
+    <div class="field">
+      <label style="font-size:12px; color:var(--muted); font-weight:600;">Gas price / gallon</label>
+      <div class="input-row">
+        <span class="prefix">$</span>
+        <input type="number" id="gasPrice" inputmode="decimal" step="0.01" value="3.20">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Trip assumptions</h2>
+    <div class="field">
+      <label>Typical wait at the store <span class="hint">arriving → food in hand</span></label>
+      <div class="input-row">
+        <input type="number" id="waitMin" inputmode="decimal" step="1" value="8">
+        <span class="suffix">min</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Average driving speed <span class="hint">door to door, surface streets</span></label>
+      <div class="input-row">
+        <input type="number" id="avgSpeed" inputmode="decimal" step="1" value="28">
+        <span class="suffix">mph</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Taxes</h2>
+    <div class="field">
+      <label style="display:block;">Home state</label>
+      <select class="state-select" id="stateSelect"></select>
+    </div>
+    <div class="breakdown" style="margin-top:10px;">
+      <span class="k">Self-employment tax</span><span class="v">15.3%</span>
+    </div>
+    <div class="breakdown">
+      <span class="k">Set aside per $1 earned</span><span class="v" id="taxSetAside">$0.00</span>
+    </div>
+    <div style="font-size:11px; color:var(--muted); margin-top:8px; line-height:1.4;">
+      Rough planning estimate only, not tax advice — actual owed depends on your total income and deductions.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Trip log <span style="text-transform:none; font-weight:500;">(for taxes)</span></h2>
+    <div class="log-summary">
+      <div class="box"><div class="n" id="logTotalTrips">0</div><div class="l">TRIPS</div></div>
+      <div class="box"><div class="n" id="logTotalMiles">0</div><div class="l">TOTAL MILES</div></div>
+      <div class="box"><div class="n" id="logTotalNet">$0</div><div class="l">TOTAL NET</div></div>
+    </div>
+    <div id="logList"></div>
+    <div class="log-actions">
+      <button type="button" id="exportBtn">Export CSV</button>
+      <button type="button" id="clearLogBtn">Clear log</button>
+    </div>
+    <div id="logStatus" style="display:none; font-size:12px; color:var(--muted); text-align:center; margin-top:8px;"></div>
+    <div style="font-size:11px; color:var(--muted); margin-top:10px; line-height:1.4;">
+      Each "Take it" tap logs a trip here with date, miles, and net profit — export anytime for your mileage records. Saved only on this device.
+    </div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <div class="grade-badge" id="gradeBadge">—</div>
+    <div class="verdict" id="verdictText">—</div>
+    <div class="verdict-sub" id="verdictSub">Enter your numbers above</div>
+    <div class="big-stats">
+      <div class="big-stat">
+        <div class="val" id="netProfit">$0.00</div>
+        <div class="lbl">NET PROFIT</div>
+      </div>
+      <div class="big-stat">
+        <div class="val" id="perMile">$0.00</div>
+        <div class="lbl">PER MILE</div>
+      </div>
+      <div class="big-stat">
+        <div class="val" id="totalMiles">0 mi</div>
+        <div class="lbl">ROUND TRIP</div>
+      </div>
+    </div>
+    <div class="decision-row">
+      <button type="button" class="skip-btn" id="skipBtn">Skip it</button>
+      <button type="button" class="take-btn" id="takeBtn"><span>Take it</span></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Breakdown</h2>
+    <div class="breakdown"><span class="k">Payout</span><span class="v" id="bdPayout">$0.00</span></div>
+    <div class="breakdown"><span class="k">Total driving cost</span><span class="v" id="bdCost">$0.00</span></div>
+    <div class="breakdown"><span class="k">Net profit</span><span class="v" id="bdNet">$0.00</span></div>
+    <div class="breakdown"><span class="k">Est. drive + wait time</span><span class="v" id="bdTime">0 min</span></div>
+    <div class="breakdown"><span class="k">Effective $/hour*</span><span class="v" id="bdHourly">$0.00</span></div>
+  </div>
+
+  <footer>
+    Time and hourly estimates use your Trip assumptions above.<br>
+    Tap "Gas only / Realistic / Full IRS" to switch cost models, or type your own $/mile.
+  </footer>
+</div>
+
+<script>
+(function() {
+  const $ = id => document.getElementById(id);
+
+  const fields = ['payout','milesToPickup','deliveryLeg','returnMiles','costPerMile','mpg','gasPrice','waitMin','avgSpeed'];
+  const estimateReturn = $('estimateReturn');
+  const manualReturnField = $('manualReturnField');
+  const costChips = document.querySelectorAll('.chip');
+  const stateSelect = $('stateSelect');
+
+  // ---- state income-tax rough overlay (rough planning estimate, not tax advice) ----
+  const STATE_TAX = {
+    AL:0.02, AK:0, AZ:0.025, AR:0.02, CA:0.01, CO:0.044, CT:0.03, DE:0.022, FL:0,
+    GA:0.01, HI:0.014, ID:0.058, IL:0.0495, IN:0.0305, IA:0.044, KS:0.031, KY:0.04,
+    LA:0.0185, ME:0.058, MD:0.02, MA:0.05, MI:0.0425, MN:0.0535, MS:0.044, MO:0.02,
+    MT:0.047, NE:0.0246, NV:0, NH:0, NJ:0.014, NM:0.017, NY:0.04, NC:0.045, ND:0.011,
+    OH:0.0275, OK:0.0025, OR:0.0475, PA:0.0307, RI:0.0375, SC:0.03, SD:0, TN:0,
+    TX:0, UT:0.0455, VT:0.0335, VA:0.02, WA:0, WV:0.0236, WI:0.035, WY:0, DC:0.04
+  };
+  const STATE_NAMES = {
+    AL:'Alabama', AK:'Alaska', AZ:'Arizona', AR:'Arkansas', CA:'California', CO:'Colorado',
+    CT:'Connecticut', DE:'Delaware', FL:'Florida', GA:'Georgia', HI:'Hawaii', ID:'Idaho',
+    IL:'Illinois', IN:'Indiana', IA:'Iowa', KS:'Kansas', KY:'Kentucky', LA:'Louisiana',
+    ME:'Maine', MD:'Maryland', MA:'Massachusetts', MI:'Michigan', MN:'Minnesota', MS:'Mississippi',
+    MO:'Missouri', MT:'Montana', NE:'Nebraska', NV:'Nevada', NH:'New Hampshire', NJ:'New Jersey',
+    NM:'New Mexico', NY:'New York', NC:'North Carolina', ND:'North Dakota', OH:'Ohio', OK:'Oklahoma',
+    OR:'Oregon', PA:'Pennsylvania', RI:'Rhode Island', SC:'South Carolina', SD:'South Dakota',
+    TN:'Tennessee', TX:'Texas', UT:'Utah', VT:'Vermont', VA:'Virginia', WA:'Washington',
+    WV:'West Virginia', WI:'Wisconsin', WY:'Wyoming', DC:'Washington DC'
+  };
+  Object.keys(STATE_NAMES).sort((a,b) => STATE_NAMES[a].localeCompare(STATE_NAMES[b])).forEach(code => {
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = STATE_NAMES[code];
+    stateSelect.appendChild(opt);
+  });
+
+  function updateTaxSetAside() {
+    const rate = 0.153 + (STATE_TAX[stateSelect.value] || 0);
+    $('taxSetAside').textContent = '$' + rate.toFixed(2);
+  }
+  stateSelect.addEventListener('change', () => { updateTaxSetAside(); saveSettings(); });
+
+  // ---- persistence (per-device convenience only) ----
+  function loadSaved() {
+    try {
+      const raw = localStorage.getItem('ddcalc_settings');
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (typeof saved.mpg === 'number') $('mpg').value = saved.mpg;
+      if (typeof saved.gasPrice === 'number') $('gasPrice').value = saved.gasPrice;
+      if (typeof saved.costPerMile === 'number') $('costPerMile').value = saved.costPerMile;
+      if (typeof saved.costMode === 'string') setActiveChip(saved.costMode, false);
+      if (typeof saved.estimateReturn === 'boolean') estimateReturn.checked = saved.estimateReturn;
+      if (typeof saved.waitMin === 'number') $('waitMin').value = saved.waitMin;
+      if (typeof saved.avgSpeed === 'number') $('avgSpeed').value = saved.avgSpeed;
+      if (typeof saved.state === 'string') stateSelect.value = saved.state;
+    } catch (e) { /* ignore corrupt/missing storage */ }
+    updateTaxSetAside();
+  }
+  function saveSettings() {
+    try {
+      localStorage.setItem('ddcalc_settings', JSON.stringify({
+        mpg: parseFloat($('mpg').value) || 37,
+        gasPrice: parseFloat($('gasPrice').value) || 3.2,
+        costPerMile: parseFloat($('costPerMile').value) || 0.35,
+        costMode: currentCostMode,
+        estimateReturn: estimateReturn.checked,
+        waitMin: parseFloat($('waitMin').value) || 8,
+        avgSpeed: parseFloat($('avgSpeed').value) || 28,
+        state: stateSelect.value
+      }));
+    } catch (e) { /* storage unavailable, skip silently */ }
+  }
+
+  // ---- session stats (offers seen / taken, running averages) ----
+  let stats = { seen: 0, taken: 0, sumHourly: 0, sumPerMile: 0 };
+  function loadStats() {
+    try {
+      const raw = localStorage.getItem('ddcalc_stats');
+      if (raw) stats = Object.assign(stats, JSON.parse(raw));
+    } catch (e) { /* ignore */ }
+    renderStats();
+  }
+  function saveStats() {
+    try { localStorage.setItem('ddcalc_stats', JSON.stringify(stats)); } catch (e) { /* ignore */ }
+  }
+  function renderStats() {
+    $('statSeen').textContent = stats.seen;
+    $('statTaken').textContent = stats.taken;
+    $('statAvgHr').textContent = stats.taken > 0 ? '$' + (stats.sumHourly / stats.taken).toFixed(0) : '—';
+    $('statAvgMi').textContent = stats.taken > 0 ? '$' + (stats.sumPerMile / stats.taken).toFixed(2) : '—';
+  }
+
+  // ---- trip log (per-trip records for tax/mileage purposes) ----
+  let tripLog = [];
+  function loadTripLog() {
+    try {
+      const raw = localStorage.getItem('ddcalc_triplog');
+      if (raw) tripLog = JSON.parse(raw) || [];
+    } catch (e) { tripLog = []; }
+    renderTripLog();
+  }
+  function saveTripLog() {
+    try { localStorage.setItem('ddcalc_triplog', JSON.stringify(tripLog)); } catch (e) { /* ignore */ }
+  }
+  function logTrip() {
+    tripLog.unshift({
+      date: new Date().toISOString(),
+      miles: lastTotalMiles,
+      payout: lastPayout,
+      cost: lastCost,
+      net: lastNet,
+      perMile: lastPerMile,
+      hourly: lastHourly
+    });
+    saveTripLog();
+    renderTripLog();
+  }
+  function fmtDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' · ' +
+      d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  }
+  function renderTripLog() {
+    const list = $('logList');
+    const totalMiles = tripLog.reduce((a, t) => a + t.miles, 0);
+    const totalNet = tripLog.reduce((a, t) => a + t.net, 0);
+    $('logTotalTrips').textContent = tripLog.length;
+    $('logTotalMiles').textContent = totalMiles.toFixed(1);
+    $('logTotalNet').textContent = '$' + totalNet.toFixed(0);
+
+    if (tripLog.length === 0) {
+      list.innerHTML = '<div class="log-empty">No trips logged yet — tap "Take it" on a calculated order to start.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    tripLog.forEach((t, i) => {
+      const row = document.createElement('div');
+      row.className = 'log-entry';
+      row.innerHTML = `
+        <div>
+          <div class="le-date">${fmtDate(t.date)}</div>
+          <div class="le-miles">${t.miles.toFixed(1)} mi</div>
+        </div>
+        <div>
+          <div class="le-net">$${t.net.toFixed(2)}</div>
+          <div class="le-sub">$${t.perMile.toFixed(2)}/mi · $${t.payout.toFixed(2)} payout</div>
+        </div>
+        <button type="button" class="le-del" data-idx="${i}">&times;</button>
+      `;
+      list.appendChild(row);
+    });
+    list.querySelectorAll('.le-del').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const idx = parseInt(e.target.dataset.idx);
+        tripLog.splice(idx, 1);
+        saveTripLog();
+        renderTripLog();
+      });
+    });
+  }
+
+  function showLogStatus(msg) {
+    const el = $('logStatus');
+    el.textContent = msg;
+    el.style.display = msg ? 'block' : 'none';
+  }
+
+  $('clearLogBtn').addEventListener('click', () => {
+    if (tripLog.length === 0) return;
+    if (!window.confirm('Clear all logged trips? This cannot be undone.')) return;
+    tripLog = [];
+    saveTripLog();
+    renderTripLog();
+  });
+
+  let downloadsFn = null;
+  if (window.claude && typeof window.claude.use === 'function') {
+    window.claude.use('downloads').then(d => { downloadsFn = d; }).catch(() => { downloadsFn = null; });
+  }
+
+  $('exportBtn').addEventListener('click', async () => {
+    if (tripLog.length === 0) {
+      showLogStatus('No trips to export yet.');
+      return;
+    }
+    if (!downloadsFn) {
+      showLogStatus("Export isn't available in this view right now.");
+      return;
+    }
+    const header = 'Date,Miles,Payout,Driving Cost,Net Profit,$/Mile,$/Hour\n';
+    const rows = tripLog.map(t => {
+      const d = new Date(t.date);
+      const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+      return [dateStr, t.miles.toFixed(1), t.payout.toFixed(2), t.cost.toFixed(2), t.net.toFixed(2), t.perMile.toFixed(2), t.hourly.toFixed(2)].join(',');
+    }).join('\n');
+    const csv = header + rows;
+    try {
+      const result = await downloadsFn.save({ filename: 'delivery-trip-log.csv', data: csv });
+      showLogStatus(result.status === 'saved' ? '✅ Exported.' : '✅ Sent.');
+    } catch (err) {
+      const code = err && err.code;
+      if (code === 'declined') showLogStatus('Export cancelled.');
+      else if (code === 'unavailable' || code === 'not_granted') showLogStatus("Export isn't available in this view.");
+      else showLogStatus("Couldn't export right now — try again.");
+    }
+  });
+
+  let currentCostMode = 'realistic';
+  let currentDistanceMode = 'single';
+  let legs = [
+    { label: 'P1', placeholder: 'To pickup 1', value: '' },
+    { label: 'P2', placeholder: 'Pickup 1 → 2', value: '' },
+    { label: 'D1', placeholder: 'To drop 1', value: '' },
+    { label: 'D2', placeholder: 'Drop 1 → 2', value: '' },
+    { label: 'Rtn', placeholder: 'Back to you', value: '' }
+  ];
+
+  const legList = $('legList');
+  const addLegBtn = $('addLegBtn');
+  const singleMode = $('singleMode');
+  const multiMode = $('multiMode');
+  const modeChips = document.querySelectorAll('#modeChips .chip');
+
+  function renderLegs() {
+    legList.innerHTML = '';
+    legs.forEach((leg, i) => {
+      const row = document.createElement('div');
+      row.className = 'leg-row';
+      row.innerHTML = `
+        <div class="leg-label">${i + 1}</div>
+        <div class="input-row">
+          <input type="number" inputmode="decimal" placeholder="${leg.placeholder}" step="0.1" value="${leg.value}" data-idx="${i}">
+          <span class="suffix">mi</span>
+        </div>
+        <button type="button" class="leg-remove" data-idx="${i}">&times;</button>
+      `;
+      legList.appendChild(row);
+    });
+    legList.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', e => {
+        legs[parseInt(e.target.dataset.idx)].value = e.target.value;
+        calculate();
+      });
+    });
+    legList.querySelectorAll('.leg-remove').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const idx = parseInt(e.target.dataset.idx);
+        legs.splice(idx, 1);
+        renderLegs();
+        calculate();
+      });
+    });
+  }
+
+  addLegBtn.addEventListener('click', () => {
+    legs.push({ label: '', placeholder: `Leg ${legs.length + 1}`, value: '' });
+    renderLegs();
+    calculate();
+  });
+
+  modeChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      currentDistanceMode = chip.dataset.mode;
+      modeChips.forEach(c => c.classList.toggle('active', c.dataset.mode === currentDistanceMode));
+      singleMode.style.display = currentDistanceMode === 'single' ? 'block' : 'none';
+      multiMode.style.display = currentDistanceMode === 'multi' ? 'block' : 'none';
+      calculate();
+    });
+  });
+
+  function gasOnlyRate() {
+    const mpg = parseFloat($('mpg').value) || 37;
+    const price = parseFloat($('gasPrice').value) || 3.2;
+    return price / mpg;
+  }
+
+  function setActiveChip(mode, updateInput = true) {
+    currentCostMode = mode;
+    costChips.forEach(c => c.classList.toggle('active', c.dataset.cost === mode));
+    if (!updateInput) return;
+    if (mode === 'gas') {
+      $('costPerMile').value = gasOnlyRate().toFixed(2);
+    } else if (mode === 'realistic') {
+      $('costPerMile').value = '0.35';
+    } else if (mode === 'irs') {
+      $('costPerMile').value = '0.68';
+    }
+  }
+
+  costChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      setActiveChip(chip.dataset.cost, true);
+      calculate();
+      saveSettings();
+    });
+  });
+
+  estimateReturn.addEventListener('change', () => {
+    manualReturnField.style.display = estimateReturn.checked ? 'none' : 'block';
+    calculate();
+    saveSettings();
+  });
+
+  function getReturnMiles() {
+    const deliveryLeg = parseFloat($('deliveryLeg').value) || 0;
+    if (estimateReturn.checked) return deliveryLeg;
+    return parseFloat($('returnMiles').value) || 0;
+  }
+
+  let lastHourly = 0;
+  let lastPerMile = 0;
+  let lastTotalMiles = 0;
+  let lastPayout = 0;
+  let lastCost = 0;
+  let lastNet = 0;
+
+  function calculate() {
+    const payout = parseFloat($('payout').value) || 0;
+    const costPerMile = parseFloat($('costPerMile').value) || 0;
+    const avgSpeed = parseFloat($('avgSpeed').value) || 28;
+    const waitMin = parseFloat($('waitMin').value) || 8;
+
+    let totalMiles = 0;
+    let legSummary = '';
+
+    if (currentDistanceMode === 'single') {
+      const toPickup = parseFloat($('milesToPickup').value) || 0;
+      const deliveryLeg = parseFloat($('deliveryLeg').value) || 0;
+      const returnMiles = getReturnMiles();
+      totalMiles = toPickup + deliveryLeg + returnMiles;
+      legSummary = totalMiles > 0
+        ? `Round trip: ${toPickup.toFixed(1)} + ${deliveryLeg.toFixed(1)} + ${returnMiles.toFixed(1)} = ${totalMiles.toFixed(1)} mi`
+        : '';
+    } else {
+      const vals = legs.map(l => parseFloat(l.value) || 0);
+      totalMiles = vals.reduce((a, b) => a + b, 0);
+      legSummary = totalMiles > 0
+        ? `Round trip: ${vals.filter(v => v > 0).map(v => v.toFixed(1)).join(' + ')} = ${totalMiles.toFixed(1)} mi`
+        : '';
+    }
+
+    const totalCost = totalMiles * costPerMile;
+    const netProfit = payout - totalCost;
+    const perMile = totalMiles > 0 ? netProfit / totalMiles : 0;
+
+    // time & hourly estimate, using editable speed + wait-time assumptions
+    const driveMinutes = totalMiles > 0 ? (totalMiles / avgSpeed) * 60 : 0;
+    const totalMinutes = driveMinutes + waitMin;
+    const hourly = totalMinutes > 0 ? netProfit / (totalMinutes / 60) : 0;
+
+    lastHourly = hourly;
+    lastPerMile = perMile;
+    lastTotalMiles = totalMiles;
+    lastPayout = payout;
+    lastCost = totalCost;
+    lastNet = netProfit;
+
+    $('netProfit').textContent = (netProfit < 0 ? '-$' : '$') + Math.abs(netProfit).toFixed(2);
+    $('perMile').textContent = (perMile < 0 ? '-$' : '$') + Math.abs(perMile).toFixed(2);
+    $('totalMiles').textContent = totalMiles.toFixed(1) + ' mi';
+
+    $('bdPayout').textContent = '$' + payout.toFixed(2);
+    $('bdCost').textContent = '-$' + totalCost.toFixed(2);
+    $('bdNet').textContent = (netProfit < 0 ? '-$' : '$') + Math.abs(netProfit).toFixed(2);
+    $('bdTime').textContent = Math.round(totalMinutes) + ' min';
+    $('bdHourly').textContent = '$' + hourly.toFixed(2) + '/hr';
+
+    $('milesTotalLine').textContent = legSummary;
+
+    const card = $('resultCard');
+    const verdict = $('verdictText');
+    const sub = $('verdictSub');
+    const badge = $('gradeBadge');
+
+    let mode, label, sublabel, grade;
+    if (totalMiles === 0 || payout === 0) {
+      mode = 'neutral';
+      label = '—';
+      sublabel = 'Enter your numbers above';
+      grade = '—';
+    } else if (perMile >= 1.5) {
+      mode = 'good'; label = '✅ Great order'; sublabel = `$${perMile.toFixed(2)}/mi — take it`; grade = 'A';
+    } else if (perMile >= 1.0) {
+      mode = 'good'; label = '✅ Good order'; sublabel = `$${perMile.toFixed(2)}/mi — worth it`; grade = 'B';
+    } else if (perMile >= 0.6) {
+      mode = 'warn'; label = '⚠️ Marginal'; sublabel = `$${perMile.toFixed(2)}/mi — thin margin`; grade = 'C';
+    } else if (perMile >= 0.3) {
+      mode = 'warn'; label = '⚠️ Weak'; sublabel = `$${perMile.toFixed(2)}/mi — barely covers costs`; grade = 'D';
+    } else {
+      mode = 'bad'; label = '❌ Skip it'; sublabel = `$${perMile.toFixed(2)}/mi — not worth the drive`; grade = 'F';
+    }
+
+    verdict.textContent = label;
+    sub.textContent = sublabel;
+    badge.textContent = grade;
+
+    const color = mode === 'good' ? 'var(--accent)' : mode === 'warn' ? 'var(--warn)' : mode === 'bad' ? 'var(--bad)' : 'var(--muted)';
+
+    card.style.background = mode === 'good' ? 'var(--accent-dim)'
+      : mode === 'warn' ? 'var(--warn-dim)'
+      : mode === 'bad' ? 'var(--bad-dim)'
+      : 'var(--card)';
+    verdict.style.color = color;
+    sub.style.color = color;
+    badge.style.color = color;
+  }
+
+  fields.forEach(id => {
+    $(id).addEventListener('input', () => {
+      calculate();
+      saveSettings();
+    });
+  });
+
+  loadSaved();
+  loadStats();
+  loadTripLog();
+  manualReturnField.style.display = estimateReturn.checked ? 'none' : 'block';
+  renderLegs();
+  calculate();
+
+  function resetOfferInputs() {
+    $('payout').value = '';
+    $('milesToPickup').value = '';
+    $('deliveryLeg').value = '';
+    $('returnMiles').value = '';
+    legs = legs.map(l => ({ ...l, value: '' }));
+    renderLegs();
+    calculate();
+  }
+
+  $('skipBtn').addEventListener('click', () => {
+    if (lastTotalMiles === 0) return;
+    stats.seen += 1;
+    saveStats();
+    renderStats();
+    resetOfferInputs();
+  });
+
+  $('takeBtn').addEventListener('click', () => {
+    if (lastTotalMiles === 0) return;
+    stats.seen += 1;
+    stats.taken += 1;
+    stats.sumHourly += lastHourly;
+    stats.sumPerMile += lastPerMile;
+    saveStats();
+    renderStats();
+    logTrip();
+    resetOfferInputs();
+  });
+
+  // ---- camera scan: read payout + distances from a photo of the popup ----
+  let sampleFn = null;
+  let sampleReady = false;
+  let sampleImgLimits = null;
+  const scanBtn = $('scanBtn');
+  const scanInput = $('scanInput');
+  const scanStatus = $('scanStatus');
+
+  function showScanStatus(msg) {
+    scanStatus.textContent = msg;
+    scanStatus.style.display = msg ? 'block' : 'none';
+  }
+
+  if (window.claude && typeof window.claude.use === 'function') {
+    window.claude.use('sample').then(async (s) => {
+      sampleFn = s;
+      if (!s) { sampleReady = false; return; }
+      try {
+        const limits = await s.limits();
+        sampleImgLimits = limits.images || null;
+        sampleReady = !!sampleImgLimits;
+      } catch (e) {
+        sampleReady = false;
+      }
+      if (sampleImgLimits) scanInput.accept = sampleImgLimits.mediaTypes.join(',');
+    }).catch(() => { sampleFn = null; sampleReady = false; });
+  }
+
+  scanBtn.addEventListener('click', () => {
+    if (!sampleReady) {
+      showScanStatus("Photo scanning isn't available on your account right now — screenshot the popup and enter the numbers below manually.");
+      return;
+    }
+    scanInput.click();
+  });
+
+  scanInput.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file || !sampleFn) return;
+
+    scanBtn.disabled = true;
+    showScanStatus('Reading photo…');
+
+    const prompt = 'You are looking at a screenshot of a food-delivery gig app\'s order-offer popup ' +
+      '(e.g. DoorDash, Uber Eats). Extract:\n' +
+      '1. The total payout in dollars shown for this offer (just the number).\n' +
+      '2. Every distance/mileage figure shown on screen (e.g. distance to pickup, delivery distance, ' +
+      'total trip distance), each with a short label, ordered as they occur along the route ' +
+      '(pickup leg(s) first, then drop-off leg(s)). Do NOT invent a return-trip distance — it is never shown on this screen.\n\n' +
+      'Respond with ONLY JSON, no other text: {"payout": number or null, "legs": [{"label": string, "miles": number}, ...]}';
+
+    try {
+      const data = await sampleFn.json(prompt, { images: [file], modelTier: 'default', cache: false });
+
+      if (typeof data.payout === 'number' && !isNaN(data.payout)) {
+        $('payout').value = data.payout;
+      }
+
+      if (Array.isArray(data.legs) && data.legs.length > 0) {
+        const scanned = data.legs
+          .filter(l => l && typeof l.miles === 'number' && !isNaN(l.miles))
+          .map(l => ({ label: '', placeholder: (l.label || 'Leg').slice(0, 40), value: String(l.miles) }));
+        if (scanned.length > 0) {
+          scanned.push({ label: '', placeholder: 'Back to you (estimate)', value: '' });
+          legs = scanned;
+          currentDistanceMode = 'multi';
+          modeChips.forEach(c => c.classList.toggle('active', c.dataset.mode === 'multi'));
+          singleMode.style.display = 'none';
+          multiMode.style.display = 'block';
+          renderLegs();
+        }
+      }
+
+      showScanStatus('✅ Filled in below — double-check the numbers and add your return-trip miles.');
+      calculate();
+      saveSettings();
+    } catch (err) {
+      const code = err && err.code;
+      if (code === 'not_granted') {
+        showScanStatus('Photo scanning needs permission, which was declined for this session.');
+      } else if (code === 'image_rejected') {
+        showScanStatus("That photo couldn't be used — try a clearer shot.");
+      } else if (code === 'invalid_json' || code === 'empty_completion') {
+        showScanStatus("Couldn't find clear numbers in that photo — try again or enter manually.");
+      } else if (code === 'rate_limited') {
+        showScanStatus('Too many requests right now — try again in a bit.');
+      } else if (code === 'images_unavailable') {
+        showScanStatus('Photo scanning isn\'t available in this view.');
+        sampleReady = false;
+      } else {
+        showScanStatus("Couldn't read that photo — enter the numbers manually.");
+      }
+    } finally {
+      scanBtn.disabled = false;
+      scanInput.value = '';
+    }
+  });
+})();
+</script>
+</body>
+</html>
